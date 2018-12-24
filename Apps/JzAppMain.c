@@ -54,7 +54,7 @@ typedef struct _Version
 	char	date[32];	///< 编译日期
 } ADAS_VERSION;
 
-static const ADAS_VERSION g_version={"adas",0,1,2,0,__DATE__};
+static const ADAS_VERSION g_version={MODULE,MAJOR,MINOR,REVISION,0,COMPILETIME};
 
 int main(int argc, char const *argv[])
 {
@@ -63,7 +63,8 @@ int main(int argc, char const *argv[])
 	CanRxMsg msg;
 	Jz_printf("%s start\n\n\n\n\n\n",__func__);
 	JZ_CMDMSG cmdmsg;
-	printf("%s success version:v%d.%d.%d date:%s  \n",__func__,g_version.major,g_version.minor,g_version.revision,g_version.date);
+	printf("%s success %s  version:v%d.%d.%d date:%s  \n",__func__,g_version.name ,g_version.major,g_version.minor,g_version.revision,g_version.date);
+	return 0;
 	while(1)
 	{
 		// msg.ExtId= 0x18FEE900;

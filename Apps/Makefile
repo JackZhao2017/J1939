@@ -2,7 +2,7 @@
 
 OBJDIR = .
 SRCDIR = .
-VERSION = 0.0.3
+
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
 CC		= $(CROSS_COMPILE)gcc
@@ -16,11 +16,20 @@ OBJDUMP	= $(CROSS_COMPILE)objdump
 RM		= rm -f
 MAKEDIR	= mkdir -p
 
+MODULE_NAME="adas"
 
+MAJOR_N  = 0
+MINOR_N  = 1
+REVISION_N = 2
+SVN =0
+TIME =$(shell date +"%Y-%m-%d %H:%M:%S")
+COMPILETIME ="$(TIME)"
 
+VERSION_FLAG :=-DMODULE=\"$(MODULE_NAME)\" -DMAJOR=$(MAJOR_N) -DMINOR=$(MINOR_N) -DREVISION=$(REVISION_N) -DCOMPILETIME=\"$(COMPILETIME)\" 
+# VERSION_FLAG +=-DCOMPILETIME =\"$(COMPILETIME)\" 
 
 JzApp.out:JzAppMain.c src/*.c
-	${CC}   -I./inc/  $^ -DLINUX -o $@ -lpthread
+	${CC}   -I./inc/  $^ -D LINUX ${VERSION_FLAG}  -o $@ -lpthread
 
 clean:
 	rm *.out
