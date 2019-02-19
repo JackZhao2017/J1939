@@ -30,6 +30,8 @@ typedef struct{
 		u8  CAN_ID_FMT;
 }FILTER;
 
+typedef void (*SystemCanReadCallBack)(CanRxMsg *msg);
+
 int  Jz_Periphral_Can_NVICDisabled(void);
 int  Jz_Periphral_Can_NVICEnabled(void);
 

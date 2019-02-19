@@ -18,12 +18,15 @@ typedef struct
 	JZ_U32 AllDisOfTraval;
 	JZ_U32 FuelOil;
 	JZ_U32 AllFuelOil;
+	JZ_U8  Direction;
+	JZ_U8  ErrCode;
+	JZ_U8  Reserved;
 	JZ_U8  SUM;
 }Jz_J1939_INFO;
 
-
+void Jz_J1939_InitData(void);
 JZ_U8 Jz_J1939_Parse(CanRxMsg *msg);
-
+void Jz_J1939_Timer(void);
 JZ_U32 Jz_J1939_GetCarInfomation(Jz_J1939_INFO *info);
 
 #endif

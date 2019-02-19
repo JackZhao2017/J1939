@@ -2,7 +2,7 @@
 #include "JzParseUser.h"
 #include "JzParam.h"
 #include "JzCanRead.h"
-
+#include "JzUartCan.h"
 
 
 JZ_S32 Jz_ParseUser_DetectSync(JZ_U8 *buf,JZ_S32 index)
@@ -24,7 +24,8 @@ JZ_S32 Jz_ParseUser_DetectvaildMsgtype(JZ_U8 *buf,JZ_U8 *type)
 	*type=buf[0];
 	switch(*type){
 		case CANMSG:	
-		case CMDIDMSG:			 	
+		case CMDIDMSG:
+		case IDMASKMSG:			 	
 			 ret=1;
 			 break;
 		default:
@@ -45,15 +46,15 @@ static JZ_U8 CheckSum(JZ_U8 *buf,JZ_U8 len)
 }
 JZ_S32 Jz_ParseUser_DetectSUM(JZ_U8 *msg, JZ_S32 len)
 {
-	if(msg[len]==CheckSum(msg,len-1))
+	if(msg[len]==CheckSum(msg,len))
 	{
 		return 1;
 	}
-	Jz_printf("%s error %d %d  \n",__func__,msg[len] ,CheckSum(msg,len-1));
+	Jz_printf("%s error %d %d  \n",__func__,msg[len] ,CheckSum(msg,len));
 	return 0;
 }
 
-JZ_S32 Jz_ParseUser_Process(JZ_U8 *msg)
+JZ_S32 Jz_ParseUser_ProcessCmd(JZ_U8 *msg)
 {
 #ifdef DEBUG
 	Jz_printf("%s \n",__func__);
@@ -85,7 +86,15 @@ JZ_S32 Jz_ParseUser_Process(JZ_U8 *msg)
 	}
 	return JZ_SUCCESS;
 }
+JZ_S32 Jz_ParseUser_ProcessIDMask(JZ_U8 *msg)
+{
+	JZ_U32 sum = msg[3];
+	if(Jz_SetCanUartSendId(sum,(JZ_U16 *)&msg[4]))
+	{
 
+	}
+	return JZ_SUCCESS;
+}
 
 
 

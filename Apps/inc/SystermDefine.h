@@ -4,19 +4,22 @@
 #include <stdio.h>
 #include <string.h>
 
-//#define LINUX
+// #define LINUX
 // #define DEBUG
 #ifdef LINUX
 #include <pthread.h>
 #include <semaphore.h>
 typedef unsigned int uint32_t;
 typedef unsigned char uint8_t;
+
 #else
 
 #include "includes.h"
 #include "Jz_Peripheral_Uart.h"
 #include "Jz_Peripheral_Can.h"
 #include "Jz_Peripheral_Led.h"
+#include "Jz_Peripheral_Timer.h"
+
 #endif
 
 
@@ -24,20 +27,34 @@ typedef unsigned char uint8_t;
 #define JZ_U32 			    unsigned int 
 #define JZ_S32          int
 #define JZ_U8			      unsigned char
+#define JZ_S8						char
 #define JZ_U16			    unsigned short  
 
 #define Jz_printf(...)  printf(__VA_ARGS__)
+
+
+#define debug_printf(fmt, arg...) do { printf("[DEBUG]\t" fmt, ## arg);} while (0)       
+#define init_printf(fmt, arg...)  do { printf("[INIT]\t" fmt, ## arg);} while (0)
+#define err_printf(fmt, arg...)  do { printf("[ERR]\t" fmt, ## arg);} while (0)
+#define info_printf(fmt, arg...) do { printf("[INFO]\t" fmt, ## arg);} while (0)
+#define warn_printf(fmt, arg...) do { printf("[WARN]\t" fmt, ## arg); } while (0)
+
 
 
 #define JZ_STACK          unsigned int 
 
 
 #ifdef LINUX
+typedef struct _linux_sem
+{
+    sem_t sem;
+    volatile int count;
+}linux_sem;
 
 #define Jz_ThreadId  	  pthread_t 
-#define Jz_Sem     		  sem_t     
+#define Jz_Sem     		  linux_sem    
 #define Jz_Mutex   		  pthread_mutex_t 
-#define JZ_VOID         void*
+#define JZ_VOID         void
 // #define JZ_MutexAttr    pthread_mutexattr_t 
 
 // typedef struct 
@@ -45,12 +62,20 @@ typedef unsigned char uint8_t;
 //     char name[32];
 //     pthread_attr_t *attr;
 // }JZ_ThreadAttr;
-
 #else
+typedef struct _ucos_sem
+{
+    OS_EVENT* sem;
+}UCOS_SEM;
+typedef struct _ucos_mutex
+{
+    OS_EVENT* mutex;
+
+}UCOS_MUTEX;
 
 #define Jz_ThreadId     JZ_S32  
-#define Jz_Sem          OS_EVENT*      
-#define Jz_Mutex        OS_EVENT*  
+#define Jz_Sem          UCOS_SEM     
+#define Jz_Mutex        UCOS_MUTEX  
 
 #define JZ_VOID         void
 
@@ -129,7 +154,18 @@ typedef  FILTER JZ_FILTER;
 
 #endif
 
+#ifdef LINUX
+
+typedef void (*SystemCanReadCallBack)(CanRxMsg *msg);
+typedef void (*SystemUartReadCallBack)(JZ_U8 *msg ,JZ_S32 len);
+typedef void (*TimerCallBack)(void);
+
+#endif
+#ifndef LINUX
+JZ_S32 JzThreadCreate(Jz_ThreadId *pid,Jz_ThreadAttr *attr, void (*task)(void *arg),void *arg);
+#else
 JZ_S32 JzThreadCreate(Jz_ThreadId *pid,Jz_ThreadAttr *attr, void *task,void *arg);
+#endif
 JZ_S32 JzThreadJoin(Jz_ThreadId pid);
 JZ_S32 JzThreadExit(void);
 
@@ -144,21 +180,21 @@ JZ_S32 JzSemPost(Jz_Sem *sem);
 JZ_S32 JzSemWartfor(Jz_Sem *sem ,JZ_U32 timout);
 JZ_S32 JzSemDestroy(Jz_Sem *sem);
 
+JZ_S32 JzCanSetFilter(JZ_FILTER *pstfilter,JZ_S32 num);
 JZ_S32 JzCanReset(JZ_S32 kbps,JZ_FILTER *pstfilter,JZ_S32 num);
 JZ_S32 JzCanEnable(void);
 JZ_S32 JzCanDisable(void);
-JZ_U8 JzGetCanErrorCode(void);
+JZ_U8  JzGetCanErrorCode(void);
 
 
-typedef void (*SystemUartReadCallBack)(JZ_U8 *msg ,JZ_S32 len);
 JZ_S32 JzSystemSetUartReadCallBack(SystemUartReadCallBack pcallback);
-typedef void (*SystemCanReadCallBack)(CanRxMsg *msg);
+JZ_S32 JzSystemSetTimerCallBack(TimerCallBack ptimercallback);
 JZ_S32 JzSystemSetCanReadCallBack(SystemCanReadCallBack pcallback);
 
-JZ_S32 JzUartWrite(JZ_U8 *buf,JZ_S32 len);
+JZ_S32 JzUartWrite(JZ_S8 *buf,JZ_S32 len);
 JZ_S32 JzUartRead(JZ_U8 *buf,JZ_S32 len);
-
 
 JZ_S32 JzLedOn(void);
 JZ_S32 JzLedOff(void);
+
 #endif

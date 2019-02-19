@@ -13,11 +13,12 @@ static JZ_U32      g_VaildLen = 0;
 static Jz_ThreadAttr g_attr={.name="uartread"};
 static JZ_VOID Jz_UartRead_TaskFunc(void *arg)
 {
-	Jz_printf("Jz_UartRead_TaskFunc\r\n");
+	init_printf("Jz_UartRead_TaskFunc\r\n");
+	
 	while(1)
 	{
-		JzSemWartfor(&g_Sem,0);
-
+		JzSemWartfor(&g_Sem,0);	
+#ifdef DEBUG
 		JZ_S32 i;
 		Jz_printf("%s \r\n",__func__);
 		for (i = 0; i < g_VaildLen; ++i)
@@ -27,6 +28,7 @@ static JZ_VOID Jz_UartRead_TaskFunc(void *arg)
 		if(g_VaildLen>0){
 			Jz_printf("\r\n");
 		}
+#endif
 		if(g_UartReadCallBackFunc!=NULL){
 			g_UartReadCallBackFunc(g_ReadBuffer,g_VaildLen);
 		}
@@ -54,7 +56,7 @@ JZ_S32 Jz_UartRead_Init(void)
 
 	g_btaskExit = JZ_FALSE;
 	g_bFinished = JZ_TRUE;
-	Jz_printf("Jz_UartRead_Init\n\r");
+	init_printf("%s prio %d \r\n",__func__,g_attr.prio);
 	return JZ_SUCCESS;
 }
 
@@ -78,7 +80,7 @@ void Jz_UartRead_SendFrame(JZ_U8  *msg,JZ_S32 len)
 		g_VaildLen = len;
 		JzSemPost(&g_Sem);
 	}else{
-		Jz_printf("Jz_CanRead_SendFrame not finished!!!!!!!!!!!!!!!!\n");
+		info_printf("Jz_UartRead_SendFrame not finished!!!!!!!!!!!!!!!!\n");
 	}
 }
 
@@ -86,7 +88,7 @@ JZ_S32 Jz_UartRead_Join(void)
 {
 	g_btaskExit = JZ_TRUE;
 	JzThreadJoin(g_Pid);
-	Jz_printf("Jz_CanRead_Join\n");
+	init_printf("Jz_CanRead_Join\n");
 	return JZ_SUCCESS;
 }
 

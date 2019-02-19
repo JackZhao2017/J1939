@@ -95,8 +95,7 @@ void Jz_Periphral_UART2_printf(char* fmt,...)
 	Jz_Periphral_UART_DMA_Enable(DMA1_Channel7,strlen((const char*)USART2_TX_BUF)); 
 }
 
-typedef void (*SystemUartReadCallBack)(unsigned char  *msg ,int  len);
-SystemUartReadCallBack g_SystemUartReadCallBackFunc=NULL;
+volatile SystemUartReadCallBack g_SystemUartReadCallBackFunc=NULL;
 void TIM4_IRQHandler(void)
 { 	
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)

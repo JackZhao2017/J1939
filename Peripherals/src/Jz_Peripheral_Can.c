@@ -138,12 +138,12 @@ void Jz_Periphral_Can_FilterInit(FILTER *filter,int  len)
 		CAN_FilterInitStructure.CAN_FilterFIFOAssignment=CAN_FIFO0;// Éè¶¨ÁËÖ¸Ïò¹ýÂËÆ÷µÄFIFOÎª0
 		CAN_FilterInitStructure.CAN_FilterActivation=ENABLE;// Ê¹ÄÜ¹ýÂËÆ÷
 		CAN_FilterInit(&CAN_FilterInitStructure);//	°´ÉÏÃæµÄ²ÎÊý³õÊ¼»¯¹ýÂËÆ÷
-		printf("idh 	=0x%4x idl 	= 0x%04x\r\n",CAN_FilterInitStructure.CAN_FilterIdHigh,CAN_FilterInitStructure.CAN_FilterIdLow);
-		printf("idMh 	=0x%4x idMl = 0x%04x\r\n",CAN_FilterInitStructure.CAN_FilterMaskIdHigh,CAN_FilterInitStructure.CAN_FilterMaskIdLow);
+		// printf("idh 	=0x%4x idl 	= 0x%04x\r\n",CAN_FilterInitStructure.CAN_FilterIdHigh,CAN_FilterInitStructure.CAN_FilterIdLow);
+		// printf("idMh 	=0x%4x idMl = 0x%04x\r\n",CAN_FilterInitStructure.CAN_FilterMaskIdHigh,CAN_FilterInitStructure.CAN_FilterMaskIdLow);
 	}
 }
-typedef void (*SystemCanReadCallBack)(CanRxMsg *msg);
-SystemCanReadCallBack g_SystemCanReadCallBackFunc=NULL;
+
+volatile SystemCanReadCallBack g_SystemCanReadCallBackFunc=NULL;
 
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {

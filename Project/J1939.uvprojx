@@ -503,6 +503,11 @@
               <FileType>1</FileType>
               <FilePath>..\Peripherals\src\Jz_Peripheral_Led.c</FilePath>
             </File>
+            <File>
+              <FileName>Jz_Peripheral_Timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Peripherals\src\Jz_Peripheral_Timer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

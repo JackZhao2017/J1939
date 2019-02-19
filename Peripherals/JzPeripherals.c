@@ -1,6 +1,7 @@
 #include "Jz_Peripheral_Uart.h"
 #include "Jz_Peripheral_Can.h"
 #include "Jz_Peripheral_Led.h"
+#include "Jz_Peripheral_Timer.h"
 
 #include "usart.h"
 
@@ -18,6 +19,10 @@
 #define  UART_IRQSubPriority  3
 
 
+#define  TIM3_IRQPriority     2
+#define  TIM3_IRQSubPriority  2
+
+
 void Jz_Periphral_Init(void)
 {
 	BAUDRATE baudrate;
@@ -33,6 +38,8 @@ void Jz_Periphral_Init(void)
 	Jz_Periphral_USART2_Init(19200,UART2_IRQPriority,UART2_IRQSubPriority);
 	Jz_Periphral_TIM4_Init(99,7199,TIM4_IRQPriority,TIM4_IRQSubPriority);		//10msÖÐ¶Ï
 	Jz_Periphral_TIM4_Set(0);
+	Jz_Periphral_TIM3_Init(999,7199,TIM3_IRQPriority,TIM3_IRQSubPriority);		//10msÖÐ¶Ï
+	Jz_Periphral_TIM3_Set(1);
 #ifdef  LED_USER_EN
 	Jz_Periphral_LED_Init();
 #endif		

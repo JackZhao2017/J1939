@@ -14,8 +14,10 @@ typedef struct {
 	JZ_U8   CRC8;
 }JZ_UartTxMsg;
 
-JZ_U32 Jz_Can2Uart(CanRxMsg *canmsg,JZ_UartTxMsg *uartmsg);
-
+JZ_S32 Jz_Can2Uart(CanRxMsg *canmsg,JZ_UartTxMsg *uartmsg);
+JZ_U8  Jz_SetCanUartSendId(JZ_U32 num,JZ_U16 *id);
+JZ_U8  Jz_IsCanUartSend(JZ_U32 id);
+JZ_S32 Jz_Can2UartInit(void);
 
 
 

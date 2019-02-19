@@ -12,11 +12,13 @@
 
 
 
-
-JZ_S32 JzThreadCreate(Jz_ThreadId *pid,Jz_ThreadAttr *attr, void *task,void *arg )
+#ifdef LINUX
+JZ_S32 JzThreadCreate(Jz_ThreadId *pid,Jz_ThreadAttr *attr, void *task,void *arg)
+#else
+JZ_S32 JzThreadCreate(Jz_ThreadId *pid,Jz_ThreadAttr *attr, void (*task)(void *arg),void *arg )
+#endif
 {
-	JZ_S32 ret  = JZ_SUCCESS;
-
+	
 	extern JZ_S32 Jz_SystermGetThreadInfoByName(const char *name ,Jz_ThreadAttr *attr);
 
 	if(Jz_SystermGetThreadInfoByName(attr->name,attr)<0)
@@ -25,6 +27,8 @@ JZ_S32 JzThreadCreate(Jz_ThreadId *pid,Jz_ThreadAttr *attr, void *task,void *arg
 	}
 	
 #ifdef LINUX
+	JZ_S32 ret  = JZ_SUCCESS;
+
 	ret = pthread_create(pid,NULL,task,arg);
 	if(ret <0)
 	{
@@ -35,7 +39,8 @@ JZ_S32 JzThreadCreate(Jz_ThreadId *pid,Jz_ThreadAttr *attr, void *task,void *arg
 #ifdef DEBUG
 	Jz_printf("%s \r\n",__func__);
 #endif
-	OSTaskCreateExt(task,
+	JZ_S32 ret =JZ_SUCCESS;
+	ret = OSTaskCreateExt(task,
 					arg,
 					attr->stktop,
 					attr->prio,
@@ -44,7 +49,11 @@ JZ_S32 JzThreadCreate(Jz_ThreadId *pid,Jz_ThreadAttr *attr, void *task,void *arg
 					attr->stksize,
 					(void *)0,
 					OS_TASK_OPT_STK_CHK
-	); 
+	);
+	if(ret!=0)
+	{
+		return JZ_FAILD;
+	} 
 
 #endif	
 	return JZ_SUCCESS;
@@ -64,6 +73,7 @@ JZ_S32 JzThreadJoin(Jz_ThreadId pid)
 #ifdef LINUX
 	return pthread_join(pid, NULL);
 #endif
+	return 0;
 }
 
 JZ_S32 JzMutexInit(Jz_Mutex *mutex ,const char  *name )
@@ -79,7 +89,12 @@ JZ_S32 JzMutexInit(Jz_Mutex *mutex ,const char  *name )
 	}
 #else
 	JZ_U8 err;
-	*mutex = OSMutexCreate(attr.prio,&err);
+	mutex->mutex = OSMutexCreate(attr.prio,&err);
+	if(mutex->mutex==0)
+	{
+		err_printf("%s  err %d \r\n",__func__,err);
+		return JZ_FAILD;
+	}
 #endif
 	return JZ_SUCCESS;
 }
@@ -90,7 +105,7 @@ JZ_S32 JzMutexLock(Jz_Mutex *mutex)
 	return pthread_mutex_lock(mutex);
 #else
 	JZ_U8 err;
-	OSMutexPend(*mutex,0,&err);
+	OSMutexPend(mutex->mutex,0,&err);
 	return err;
 #endif
 }
@@ -99,7 +114,7 @@ JZ_S32 JzMutexUnlock(Jz_Mutex *mutex)
 #ifdef LINUX
 	return pthread_mutex_unlock(mutex);
 #else
-	return OSMutexPost(*mutex);
+	return OSMutexPost(mutex->mutex);
 #endif
 }
 JZ_S32 JzMutexDestroy(Jz_Mutex *mutex)
@@ -114,26 +129,25 @@ JZ_S32 JzMutexDestroy(Jz_Mutex *mutex)
 JZ_S32 JzSemCreate(Jz_Sem *sem)
 {
 #ifdef LINUX
-	JZ_S32 ret = sem_init(sem,0,0);
+	sem->count =0;
+	JZ_S32 ret = sem_init(&sem->sem,0,0);
 	if(ret <0)
 	{
 		return JZ_FAILD;
 	}	
 #else
-	*sem = OSSemCreate(0);
-	if(*sem==0)
+	sem->sem= OSSemCreate(0);
+	if(sem->sem==0)
 	{
 		return JZ_FAILD;
 	}
-	if((*sem)->OSEventType!=OS_EVENT_TYPE_SEM)
+	if(sem->sem->OSEventType!=OS_EVENT_TYPE_SEM)
 	{
-#ifdef DEBUG
-		Jz_printf("%s  type %d \r\n",__func__,(*sem)->OSEventType);
-#endif
+		err_printf("%s  type %d \r\n",__func__,sem->sem->OSEventType);
 		return JZ_FAILD;
 	}
 #ifdef DEBUG
-		Jz_printf("%s  type %d \r\n",__func__,(*sem)->OSEventType);
+		Jz_printf("%s  type %d \r\n",__func__,sem->sem->OSEventType);
 #endif
 #endif
 	return  JZ_SUCCESS;
@@ -142,9 +156,10 @@ JZ_S32 JzSemCreate(Jz_Sem *sem)
 JZ_S32 JzSemPost(Jz_Sem *sem)
 {
 #ifdef LINUX 
-	return  sem_post(sem);
+	sem->count = 0;
+	return  sem_post(&sem->sem);
 #else
-	OSSemPost(*sem);
+	OSSemPost(sem->sem);
 #endif
 	return 0;
 }
@@ -152,17 +167,22 @@ JZ_S32 JzSemPost(Jz_Sem *sem)
 JZ_S32 JzSemWartfor(Jz_Sem *sem ,JZ_U32 timout)
 {
 #ifdef LINUX 
-	if(timout>0)
-	{	
-		usleep(timout*1000);
+	sem->count = timout;
+	if(timout){
+		while(sem->count>1)
+		{	
+			sem->count--;
+			usleep(1000);
+		}
 	}else{
-		return sem_wait(sem);
+		return sem_wait(&sem->sem);
 	}
+	return 0;
 #else
 	JZ_U8 err;
-	OSSemPend(*sem,timout,&err);	
+	OSSemPend(sem->sem,timout,&err);	
 #ifdef DEBUG
-	Jz_printf("%s  timout %d err %d  type %d \r\n",__func__,timout,err,(*sem)->OSEventType);
+	Jz_printf("%s  timout %d err %d  type %d \r\n",__func__,timout,err,sem->sem->OSEventType);
 #endif
 	return err;
 #endif
@@ -171,13 +191,19 @@ JZ_S32 JzSemWartfor(Jz_Sem *sem ,JZ_U32 timout)
 JZ_S32 JzSemDestroy(Jz_Sem *sem)
 {
 #ifdef LINUX 
-	return sem_destroy(sem);
+	return sem_destroy(&sem->sem);
 #else
 	return 0;
 #endif
 }
 
-
+JZ_S32 JzCanSetFilter(JZ_FILTER *pstfilter,JZ_S32 num)
+{
+#ifndef LINUX
+	Jz_Periphral_Can_FilterInit(pstfilter,num);
+#endif
+	return JZ_SUCCESS;
+}
 
 
 JZ_S32 JzCanReset(JZ_S32 kbps,JZ_FILTER *pstfilter,JZ_S32 num)
@@ -256,15 +282,21 @@ JZ_S32 JzSystemSetCanReadCallBack(SystemCanReadCallBack pcallback)
 	g_SystemCanReadCallBackFunc = pcallback;
 	return 0;
 }
+JZ_S32 JzSystemSetTimerCallBack(TimerCallBack ptimercallback)
+{
+	extern volatile TimerCallBack g_TimerCallback;
+	g_TimerCallback = ptimercallback;
+	return 0;
+}
 
-JZ_S32 JzUartWrite(JZ_U8 *buf,JZ_S32 len)
+JZ_S32 JzUartWrite(JZ_S8 *buf,JZ_S32 len)
 {
 #ifdef LINUX
 	JZ_S32 i;
 	Jz_printf("%s \r\n",__func__);
 	for (i = 0; i < len; ++i)
 	{
-		Jz_printf("0x%02x ",buf[i]);
+		Jz_printf("0x%02x ",(JZ_U8)buf[i]);
 	}
 	if(len>0){
 		Jz_printf("\r\n");

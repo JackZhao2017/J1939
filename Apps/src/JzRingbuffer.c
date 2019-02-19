@@ -2,10 +2,10 @@
 #include "JzRingbuffer.h"
 
 
-static void Print_Info(const char *func,JZ_RINGBUFFER *info)
-{
-	Jz_printf(" %s get %d put  %d num %d \r\n",func,info->get,info->put,info->num);
-}
+//static void Print_Info(const char *func,JZ_RINGBUFFER *info)
+//{
+//	Jz_printf(" %s get %d put  %d num %d \r\n",func,info->get,info->put,info->num);
+//}
 
 
 JZ_S32  Jz_Ringbuffer_Init(JZ_RINGBUFFER *info,JZ_U8 *buf,JZ_S32 size,const char *name)
@@ -18,8 +18,7 @@ JZ_S32  Jz_Ringbuffer_Init(JZ_RINGBUFFER *info,JZ_U8 *buf,JZ_S32 size,const char
 	info->put =0;
 	info->num =0;
 	info->size=size;
-	JzMutexInit(&info->mutex,name);
-	return JZ_SUCCESS;
+	return JzMutexInit(&info->mutex,name);
 }
 JZ_S32  Jz_Ringbuffer_PutDataToBuffer(JZ_RINGBUFFER *info,JZ_U8 *buf,JZ_S32 len)
 {

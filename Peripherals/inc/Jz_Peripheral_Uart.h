@@ -14,6 +14,7 @@
 // extern u16 USART2_RX_STA;   						//½ÓÊÕÊý¾Ý×´Ì¬
 
 
+typedef void (*SystemUartReadCallBack)(unsigned char  *msg ,int  len);
 
 void Jz_Periphral_USART2_Init(u32 bound,uint8_t irqPriority,uint8_t irqSubPriority);
 void Jz_Periphral_TIM4_Set(u8 sta);
