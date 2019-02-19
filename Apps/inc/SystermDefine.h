@@ -38,7 +38,7 @@ typedef unsigned char uint8_t;
 #define err_printf(fmt, arg...)  do { printf("[ERR]\t" fmt, ## arg);} while (0)
 #define info_printf(fmt, arg...) do { printf("[INFO]\t" fmt, ## arg);} while (0)
 #define warn_printf(fmt, arg...) do { printf("[WARN]\t" fmt, ## arg); } while (0)
-
+#define sys_printf(fmt, arg...) do { printf("[SYSTERM]\t" fmt, ## arg); } while (0)
 
 
 #define JZ_STACK          unsigned int 
@@ -70,7 +70,6 @@ typedef struct _ucos_sem
 typedef struct _ucos_mutex
 {
     OS_EVENT* mutex;
-
 }UCOS_MUTEX;
 
 #define Jz_ThreadId     JZ_S32  

@@ -28,19 +28,11 @@ static const JZ_FILTER g_stDefaultCanFilter[kDEFAULT_FILTER]={
 		};
 
 static JZ_FILTER g_stJzCanFilter[kMAX_FILTER];
-static JZ_FILTER g_stJzCanResetFilter[kMAX_FILTER];
-//static JZ_U8  g_ResetFilterNum = kDEFAULT_FILTER;
+static JZ_FILTER g_stJzCanResetFilter[kRESETFILTER];
+static JZ_U8  g_ResetFilterNum = 0;
 static JZ_U8  g_DefaultBaudrate = 24;
 
 
-//static void Print_FilterInfo(JZ_FILTER *pstfilter,JZ_U32 num)
-//{
-//	JZ_U32 i=0;
-//	for(i=0;i<num;i++)
-//	{
-//		
-//	}
-//}
 JZ_VOID Jz_ParamInitFilter(JZ_VOID)
 {
 	memset(g_stJzCanFilter,0,sizeof(g_stJzCanFilter));	
@@ -58,49 +50,62 @@ JZ_FILTER *Jz_ParamGetDefaultFilter(JZ_U8 *num)
 
 JZ_FILTER *Jz_ParamGetResetFilter(JZ_U8 *num)
 {
-	JZ_U32 i=0,index=0;
-	for(i=0;i<kMAX_FILTER;i++)
+	JZ_U32 i=0;
+	*num = kDEFAULT_FILTER+g_ResetFilterNum;
+	memcpy(g_stJzCanFilter,g_stDefaultCanFilter,sizeof(JZ_FILTER)*kDEFAULT_FILTER);
+	for(i=kDEFAULT_FILTER;i<kDEFAULT_FILTER+g_ResetFilterNum;i++)
 	{
-		if(g_stJzCanResetFilter[i].CAN_ID_FMT==0)
-			continue;	
-		g_stJzCanFilter[index].CAN_ID_FMT  = g_stJzCanResetFilter[i].CAN_ID_FMT;
-		g_stJzCanFilter[index].CAN_ID_MASK = g_stJzCanResetFilter[i].CAN_ID_MASK;
-		g_stJzCanFilter[index].CAN_ID 	   = g_stJzCanResetFilter[i].CAN_ID;
-		index+=1;
+		g_stJzCanFilter[i].CAN_ID_FMT  = g_stJzCanResetFilter[i-kDEFAULT_FILTER].CAN_ID_FMT;
+		g_stJzCanFilter[i].CAN_ID_MASK = g_stJzCanResetFilter[i-kDEFAULT_FILTER].CAN_ID_MASK;
+		g_stJzCanFilter[i].CAN_ID 	   = g_stJzCanResetFilter[i-kDEFAULT_FILTER].CAN_ID;
+
 	}
-	*num = index;
 	return g_stJzCanFilter;
 }
 
-JZ_S32 Jz_ParamSetResetFilter(JZ_U32 index ,JZ_FILTER *pstfilter)
+JZ_S32 Jz_ParamSetResetFilter(JZ_U32 sum,JZ_U32 index ,JZ_FILTER *pstfilter)
 {
-	if(index>=kMAX_FILTER){
+	if(index>=kRESETFILTER){
 		return JZ_FAILD;
 	}
+	if(sum>=kRESETFILTER){
+		return JZ_FAILD;
+	}
+	g_ResetFilterNum = sum;
 
 	g_stJzCanResetFilter[index].CAN_ID_FMT  = pstfilter->CAN_ID_FMT;
 	g_stJzCanResetFilter[index].CAN_ID      = pstfilter->CAN_ID;
 	g_stJzCanResetFilter[index].CAN_ID_MASK = pstfilter->CAN_ID_MASK;
-
+#ifdef DEBUG
+	info_printf("%s %d\r\n",__func__,index);
+	info_printf("CAN_ID 0x%x \r\n",g_stJzCanResetFilter[index].CAN_ID);
+	info_printf("CAN_ID_MASK 0x%x \r\n",g_stJzCanResetFilter[index].CAN_ID_MASK);
+	info_printf("CAN_ID_FMT %d \r\n",g_stJzCanResetFilter[index].CAN_ID_FMT);
+#endif
 	return JZ_SUCCESS;
 }
 
 
 JZ_S32 Jz_ParamSetBaudrate(JZ_U8 kbps)
 {
-	if((kbps!=12)||(kbps!=24))
+	if((kbps!=12)&&(kbps!=24))
 	{
 		return JZ_FAILD;
 	}
-
+#ifdef DEBUG
+	info_printf("%s %d \r\n",__func__,kbps);
+#endif
 	g_DefaultBaudrate = kbps;
-
 	return JZ_SUCCESS;
 }
 JZ_S32 Jz_ParamGetBaudrate(void)
 {
 	return g_DefaultBaudrate;
 }
+
+
+
+
 
 static JZ_U8 volatile g_SystermErrCode=0;
 

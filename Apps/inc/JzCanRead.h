@@ -10,7 +10,6 @@
 typedef void (*CanReadCallBack)(CanRxMsg *msg);
 
 JZ_S32 Jz_CanRead_Init(void);
-JZ_S32 Jz_CanRead_SetFilter(JZ_FILTER *pstFilter);
 JZ_S32 Jz_CanRead_Suspend(void);
 JZ_S32 Jz_CanRead_Resume(void);
 JZ_S32 Jz_CanRead_ResetCan(void);

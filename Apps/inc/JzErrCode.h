@@ -7,6 +7,9 @@
 #define UART_SEND_FULL 0x04
 #define UART_CMD_ERR   0x08
 #define SYS_ERR		   0x10
+#define MUTEX_ERR 	   0x20
+
+
 
 void  Jz_SetSystermErrCode(JZ_U8 err); 
 JZ_U8  Jz_GetSystermErrCode(void); 

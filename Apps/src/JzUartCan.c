@@ -1,11 +1,13 @@
 #include "JzUartCan.h"
-#define JZ_SYNC 	0x55
-#define JZ_CANMSG   0x11
+
+#define JZ_SYNC 			0x55
+#define JZ_CANMSG   	0x10
 #define JZ_CANUARTMSG_MAX 14
 
 typedef struct _Can2UartId
 {
 	JZ_U8  volatile enable;
+	JZ_U8  volatile busy;
 	JZ_U8  volatile sum;
 	JZ_U16 ID[JZ_CANUARTMSG_MAX];
 	Jz_Mutex   mutex;
@@ -60,10 +62,12 @@ JZ_S32 Jz_Can2UartInit(void)
 {
 	msgcounter = 0;
 	memset(&g_stCan2UartId,0,sizeof(g_stCan2UartId));
-	if(JzMutexInit(&g_stCan2UartId.mutex,"uartcan")==0)
+	if(JzMutexInit(&g_stCan2UartId.mutex,"uartcan"))
 	{
+		err_printf("%s \r\n",__func__);
 		return JZ_FAILD;
 	}
+	info_printf("Can2UartId %d  Jz_Mutex %d \r\n",sizeof(Can2UartId),sizeof(Jz_Mutex));
 	return JZ_SUCCESS;
 }
 JZ_U8  Jz_SetCanUartSendId(JZ_U32 num,JZ_U16 *id)
@@ -71,14 +75,14 @@ JZ_U8  Jz_SetCanUartSendId(JZ_U32 num,JZ_U16 *id)
 	int i=0;
 	int sum =num>JZ_CANUARTMSG_MAX?JZ_CANUARTMSG_MAX:num;
 	if(id ==NULL){
-		Jz_printf(" %s \n",__func__);
+		Jz_printf(" %s \r\n",__func__);
 		return 1;
 	}
 	JzMutexLock(&g_stCan2UartId.mutex);
 	for(i=0;i<sum;i++)
 	{
 		g_stCan2UartId.ID[i] = id[i];
-		Jz_printf("IDMASK %x \n",g_stCan2UartId.ID[i]);
+		info_printf("IDMASK %x \r\n",g_stCan2UartId.ID[i]);
 	}
 	g_stCan2UartId.sum=sum&0xff;
 	g_stCan2UartId.enable =1;

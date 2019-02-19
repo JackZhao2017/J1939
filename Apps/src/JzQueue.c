@@ -1,10 +1,10 @@
 #include "SystermDefine.h"
 #include "JzQueue.h"
 
-//static void Print_QueueInfo(const char *func,JZ_QUEUE_INFO *info)
-//{
-//	Jz_printf(" %s get %d put  %d \r\n",func,info->get,info->put);
-//}
+// static void Print_QueueInfo(const char *func,JZ_QUEUE_INFO *info)
+// {
+// 	Jz_printf(" %s get %d put  %d \r\n",func,info->get,info->put);
+// }
 
 
 int  JZ_QueueInit(JZ_QUEUE_INFO *info,CanRxMsg *buf ,int size,const char *name)
@@ -30,13 +30,13 @@ int JZ_QueuePut(JZ_QUEUE_INFO *info,CanRxMsg *msg)
 {
 	JzMutexLock(&info->mutex);
 	if(((info->put+1)%info->size)==info->get){
-		Jz_printf("full \r\n");
+		err_printf("full \r\n");
 		JzMutexUnlock(&info->mutex);
 		return 1;
 	}
 	memcpy(&info->buf[info->put],msg,sizeof(CanRxMsg));
 	info->put=(info->put+1)%info->size;
-	//Print_QueueInfo(__func__,info);
+	// Print_QueueInfo(__func__,info);
 	JzMutexUnlock(&info->mutex);
 	return 0;
 }
@@ -49,7 +49,7 @@ int JZ_QueueGet(JZ_QUEUE_INFO *info,CanRxMsg *msg)
 	}	
 	memcpy(msg,&info->buf[info->get],sizeof(CanRxMsg));
 	info->get=(info->get+1)%info->size;
-	//Print_QueueInfo(__func__,info);
+	// Print_QueueInfo(__func__,info);
 	JzMutexUnlock(&info->mutex);
 	return 1;
 }

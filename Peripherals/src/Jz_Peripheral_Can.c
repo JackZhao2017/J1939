@@ -150,11 +150,12 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	OS_CPU_SR cpu_sr=0;	
 	CanRxMsg RxMessage;	
 	OS_ENTER_CRITICAL();
-	CAN_Receive(CAN1,CAN_FIFO0, &RxMessage); 
+	CAN_Receive(CAN1,CAN_FIFO0, &RxMessage);
+	OS_EXIT_CRITICAL();	 
 	if(g_SystemCanReadCallBackFunc!=NULL){
 		g_SystemCanReadCallBackFunc(&RxMessage);
 	}
-	OS_EXIT_CRITICAL();				
+				
 } 
 
 
@@ -163,5 +164,27 @@ uint8_t Jz_Periphral_Can_GetErrorCode(void)
 	uint8_t error=0;
 	error = CAN_GetLastErrorCode(CAN1);
 	return error;
+}
+
+void Jz_Periphral_Can_Transmit(CanTxMsg *TxMessage)
+{
+	CanTxMsg Message;
+	if(TxMessage->IDE==1){
+		Message.StdId=TxMessage->StdId;	//±ê×¼±êÊ¶·ûÎª0x00
+		Message.ExtId=TxMessage->ExtId; //À©Õ¹±êÊ¶·û0x0000
+		Message.IDE=CAN_ID_EXT;//Ê¹ÓÃ±ê×¼±êÊ¶·û
+		Message.RTR=TxMessage->RTR;//ÎªÊý¾ÝÖ¡
+		Message.DLC=TxMessage->DLC;	//	ÏûÏ¢µÄÊý¾Ý³¤¶ÈÎª2¸ö×Ö½Ú
+		memcpy(Message.Data,TxMessage->Data,TxMessage->DLC);
+		CAN_Transmit(CAN1,&Message); //·¢ËÍÊý¾Ý
+	}else if(TxMessage->IDE==0){
+		Message.StdId=TxMessage->StdId;	//±ê×¼±êÊ¶·ûÎª0x00
+		Message.ExtId=TxMessage->ExtId; //À©Õ¹±êÊ¶·û0x0000
+		Message.IDE=CAN_ID_STD;//Ê¹ÓÃ±ê×¼±êÊ¶·û
+		Message.RTR=TxMessage->RTR;//ÎªÊý¾ÝÖ¡
+		Message.DLC=TxMessage->DLC;	//	ÏûÏ¢µÄÊý¾Ý³¤¶ÈÎª2¸ö×Ö½Ú
+		memcpy(Message.Data,TxMessage->Data,TxMessage->DLC);
+		CAN_Transmit(CAN1,&Message); //·¢ËÍÊý¾Ý
+	}
 }
 

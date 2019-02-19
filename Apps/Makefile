@@ -29,7 +29,7 @@ VERSION_FLAG :=-DMODULE=\"$(MODULE_NAME)\" -DMAJOR=$(MAJOR_N) -DMINOR=$(MINOR_N)
 # VERSION_FLAG +=-DCOMPILETIME =\"$(COMPILETIME)\" 
 
 JzApp.out:JzAppMain.c src/*.c
-	${CC}   -I./inc/  $^ -D LINUX ${VERSION_FLAG}  -o $@ -lpthread
+	${CC}   -I./inc/ -I../ $^ -D LINUX ${VERSION_FLAG}  -o $@ -lpthread
 
 clean:
 	rm *.out

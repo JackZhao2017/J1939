@@ -104,3 +104,5 @@ JZ_S32 Jz_SystermGetThreadInfoByName(const char *name ,Jz_ThreadAttr *attr)
 	//Jz_printf("thread name %s prio %d \r\n",name ,attr->prio);
 	return JZ_SUCCESS;
 }
+
+

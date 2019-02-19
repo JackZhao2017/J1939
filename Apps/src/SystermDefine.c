@@ -147,7 +147,7 @@ JZ_S32 JzSemCreate(Jz_Sem *sem)
 		return JZ_FAILD;
 	}
 #ifdef DEBUG
-		Jz_printf("%s  type %d \r\n",__func__,sem->sem->OSEventType);
+		sys_printf("%s  type %d \r\n",__func__,sem->sem->OSEventType);
 #endif
 #endif
 	return  JZ_SUCCESS;
@@ -182,7 +182,7 @@ JZ_S32 JzSemWartfor(Jz_Sem *sem ,JZ_U32 timout)
 	JZ_U8 err;
 	OSSemPend(sem->sem,timout,&err);	
 #ifdef DEBUG
-	Jz_printf("%s  timout %d err %d  type %d \r\n",__func__,timout,err,sem->sem->OSEventType);
+	sys_printf("%s  timout %d err %d  type %d \r\n",__func__,timout,err,sem->sem->OSEventType);
 #endif
 	return err;
 #endif
@@ -196,11 +196,26 @@ JZ_S32 JzSemDestroy(Jz_Sem *sem)
 	return 0;
 #endif
 }
-
+// typedef struct{
+// 	JZ_U32 CAN_ID;
+// 	JZ_U32 CAN_ID_MASK;
+// 	JZ_U32 CAN_ID_FMT;
+// } JZ_FILTER;
 JZ_S32 JzCanSetFilter(JZ_FILTER *pstfilter,JZ_S32 num)
 {
-#ifndef LINUX
+#ifdef LINUX
+	JZ_S32 i;
+	sys_printf("%s \r\n",__func__);
+	for (i = 0; i < num; ++i)
+	{
+		sys_printf("CAN_ID 0x%x \r\n",pstfilter[i].CAN_ID);
+		sys_printf("CAN_ID_MASK 0x%x \r\n",pstfilter[i].CAN_ID_MASK);
+		sys_printf("CAN_ID_FMT %d \r\n",pstfilter[i].CAN_ID_FMT);
+	}
+#else
+	JZ_ENTER_CRITICAL();
 	Jz_Periphral_Can_FilterInit(pstfilter,num);
+	JZ_EXIT_CRITICAL();
 #endif
 	return JZ_SUCCESS;
 }
@@ -233,7 +248,7 @@ JZ_U8 JzGetCanErrorCode(void)
 
 JZ_S32 JzCanEnable(void)
 {
-	Jz_printf("%s \n",__func__);
+	sys_printf("%s \n",__func__);
 #ifndef LINUX	
  	return Jz_Periphral_Can_NVICEnabled();
 #else
@@ -243,7 +258,7 @@ JZ_S32 JzCanEnable(void)
 
 JZ_S32 JzCanDisable(void)
 {
-	Jz_printf("%s \n",__func__);
+	sys_printf("%s \n",__func__);
 #ifndef LINUX
 	return Jz_Periphral_Can_NVICDisabled();
 #else
@@ -255,7 +270,7 @@ JZ_S32 JzLedOn(void)
 #ifndef LINUX
 	Jz_Periphral_LED_On();
 #else
-	Jz_printf("%s \n",__func__);
+	sys_printf("%s \n",__func__);
 #endif
 	return 0;
 }
@@ -264,7 +279,7 @@ JZ_S32 JzLedOff(void)
 #ifndef LINUX
 	Jz_Periphral_LED_Off();
 #else
-	Jz_printf("%s \n",__func__);
+	sys_printf("%s \n",__func__);
 #endif
 	return 0;
 }
@@ -292,15 +307,15 @@ JZ_S32 JzSystemSetTimerCallBack(TimerCallBack ptimercallback)
 JZ_S32 JzUartWrite(JZ_S8 *buf,JZ_S32 len)
 {
 #ifdef LINUX
-	JZ_S32 i;
-	Jz_printf("%s \r\n",__func__);
-	for (i = 0; i < len; ++i)
-	{
-		Jz_printf("0x%02x ",(JZ_U8)buf[i]);
-	}
-	if(len>0){
-		Jz_printf("\r\n");
-	}
+	// JZ_S32 i;
+	// Jz_printf("%s \r\n",__func__);
+	// for (i = 0; i < len; ++i)
+	// {
+	// 	Jz_printf("0x%02x ",(JZ_U8)buf[i]);
+	// }
+	// if(len>0){
+	// 	Jz_printf("\r\n");
+	// }
 #else 
 	Jz_Periphral_UART_SEND_DATA(buf,len);
 #endif

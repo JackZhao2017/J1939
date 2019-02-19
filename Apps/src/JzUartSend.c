@@ -26,7 +26,7 @@ static JZ_VOID Jz_UartSend_TaskFunc(void *arg)
 	init_printf("Jz_UartSend_TaskFunc\r\n");
 	while(1)
 	{
-		JzSemWartfor(&g_Sem,200);
+		JzSemWartfor(&g_Sem,50);
 		while(JZ_QueueGet(&g_stSendQueueInfo,&mSendMsg))
 		{
 			Jz_Can2Uart(&mSendMsg,&mUartMsg);

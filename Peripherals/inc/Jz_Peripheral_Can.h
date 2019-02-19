@@ -39,7 +39,7 @@ void Jz_Periphral_Can_GPIOConfig(void);
 void Jz_Periphral_Can_Init(BAUDRATE baudrate);
 void Jz_Periphral_Can_FilterInit(FILTER *filter,int  len);
 void Jz_Periphral_Can_NVICConfiguration(uint8_t Priority ,uint8_t SubPriority,FunctionalState newstate);
-
+void Jz_Periphral_Can_Transmit(CanTxMsg *TxMessage);
 uint8_t Jz_Periphral_Can_GetErrorCode(void);
 
 #endif

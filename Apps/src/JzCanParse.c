@@ -23,12 +23,13 @@ static JZ_VOID Jz_CanParse_TaskFunc(void *arg)
 	while(1)
 	{
 		JzSemWartfor(&g_Sem,0);
+
 		//g_bfinished = JZ_FALSE;
 		if(g_bExit == JZ_TRUE){
 			break;
 		}
 		while(JZ_QueueGet(&g_stQueueInfo,&msg))
-		{			
+		{		
 			Jz_J1939_Parse(&msg);
 			if(Jz_IsCanUartSend(msg.ExtId))
 			{
@@ -48,8 +49,8 @@ void Jz_CanParse_SendFrame(CanRxMsg *msg)
 		Jz_SetSystermErrCode(CAN_PARSE_FULL);
 	}
 	if(g_bfinished==JZ_TRUE){
-		JzSemPost(&g_Sem);
 		g_bfinished = JZ_FALSE;
+		JzSemPost(&g_Sem);
 	}
 }
 JZ_S32 Jz_CanParse_SetCallBack(CanParseCallBack pCallBackFunc)

@@ -40,14 +40,6 @@ static JZ_VOID Jz_CanRead_TaskFunc(void *arg)
 	JzThreadExit();
 }
 
-JZ_S32 Jz_CanRead_SetFilter(JZ_FILTER *pstFilter)
-{
-	Jz_printf("Jz_CanRead_SetFilter\n");
-
-
-	return JZ_SUCCESS;
-}
-
 
 JZ_S32 Jz_CanRead_SetCallBack(CanReadCallBack pCallBackFunc)
 {
@@ -117,7 +109,9 @@ JZ_S32 Jz_CanRead_ResetCan(void)
 	if(pstfilter ==NULL)
 		return -1;
 	JZ_U32 Baudrate = Jz_ParamGetBaudrate();
-	//TOGO CODE
+	Jz_CanRead_Suspend();
+	JzCanSetFilter(pstfilter,num);
+	Jz_CanRead_Resume();
 	return JZ_SUCCESS;	
 }
 

@@ -50,7 +50,7 @@ JZ_S32 Jz_ParseUser_DetectSUM(JZ_U8 *msg, JZ_S32 len)
 	{
 		return 1;
 	}
-	Jz_printf("%s error %d %d  \n",__func__,msg[len] ,CheckSum(msg,len));
+	err_printf("%s error %d %d  \n",__func__,msg[len] ,CheckSum(msg,len));
 	return 0;
 }
 
@@ -59,31 +59,34 @@ JZ_S32 Jz_ParseUser_ProcessCmd(JZ_U8 *msg)
 #ifdef DEBUG
 	Jz_printf("%s \n",__func__);
 #endif
+
+
 	JZ_CMDMSG JzCmdMsg;
 	JZ_FILTER filter;
-	memcpy(&JzCmdMsg,msg+2,sizeof(JzCmdMsg));
-
-	
-	if(JzCmdMsg.INDEX>=kMAX_FILTER)
+	int i=0;
+	if(msg==NULL){
+		err_printf("%s   msg null\n",__func__);
 		return JZ_FAILD;
+	}
 
+	memcpy(&JzCmdMsg,msg+3,sizeof(JzCmdMsg));
+
+	if(JzCmdMsg.SUM>4){
+		err_printf("%s   SUM %d \n",__func__,JzCmdMsg.SUM);
+		return JZ_FAILD;
+	}
 	if((JzCmdMsg.KBPS ==12)||(JzCmdMsg.KBPS ==14)){
 		Jz_ParamSetBaudrate(JzCmdMsg.KBPS);	
 	}
 
-	Jz_CanRead_Suspend();
+	for(i=0;i<JzCmdMsg.SUM;i++){
 
-	filter.CAN_ID      = JzCmdMsg.ID;
-	filter.CAN_ID_MASK = JzCmdMsg.MARSK;
-	filter.CAN_ID_FMT  = JzCmdMsg.IDE;
-
-	Jz_ParamSetResetFilter(JzCmdMsg.INDEX,&filter);
-
-	if(JzCmdMsg.STATE == 2)
-	{
-		Jz_CanRead_Resume();
-		Jz_CanRead_ResetCan();
+		filter.CAN_ID      = JzCmdMsg.ID[i]<<8;
+		filter.CAN_ID_MASK = JzCmdMsg.MARSK[i]<<8;
+		filter.CAN_ID_FMT  = 29;
+		Jz_ParamSetResetFilter(JzCmdMsg.SUM,i,&filter);
 	}
+	Jz_CanRead_ResetCan();
 	return JZ_SUCCESS;
 }
 JZ_S32 Jz_ParseUser_ProcessIDMask(JZ_U8 *msg)
