@@ -3,8 +3,16 @@
 #include "JzErrCode.h"
 
 #define TRAVEL_PGN   0xfec1  //激活时1s；或状态改变
+#define ETC5_PGN	 0xfec3  //
+
+#define CAR_PGN      0xfee8  //车辆方向/速度1、2	方向盘负荷 3、4	基于引航的车辆速度5、6	斜度7、8	高度
 #define OIL_PGN		 0xfee9  //请求时
+#define DRIVER_PGN	 0xfee0  //行车距离1、2、3、4	旅程距离 5、8	总的行车距离
+#define WEIGTH_PGN   0xfeea  //
+
 #define TCO1_PGN 	 0xfe6c  //50ms
+#define ACC1_PGN	 0xfe6f  //100ms  5、6 路况曲度
+
 #define CARSPEED_PGN 0xfef1  //100ms
 
 #define ERC1_PGN	 0xf000
@@ -21,15 +29,26 @@ typedef struct
 	JZ_U8 CAR_Direction;
 	JZ_U8 Wheel_Speed ;
 
-	JZ_U8 EBC1_Brake ;//电子闸控制器 ,2字节刹车踏板位置
-	JZ_U8 EEC2_Accelerate ;//电子发动机控制器,2字节 AP加速踏板位置
+	JZ_U8  EBC1_Brake ;//电子闸控制器 ,2字节刹车踏板位置
+	JZ_U8  EEC2_Accelerate ;//电子发动机控制器,2字节 AP加速踏板位置
 	JZ_U16 EEC1_RPM ;//发送机转速
 
-	JZ_U32 DisOfTraval    ;//里程;
-	JZ_U32 AllDisOfTraval ;
+	JZ_U32 DisOfTraval;//里程;
+	JZ_U32 AllDisOfTraval;
 
-	JZ_U32 FuelOil    ;//油耗;
+	JZ_U32 DisOfDriver;//行车距离;
+	JZ_U32 AllDisOfDriver;
+
+	JZ_U32 FuelOil;//油耗;
 	JZ_U32 AllFuelOil ;	
+
+	JZ_U16 Curvature;
+	JZ_U16 SensorDKSwitch;  
+
+	JZ_U16 CompassDirection;
+	JZ_U16 AxleWeight;
+	JZ_U16 TrailWeight; 
+	JZ_U16 StuffWeight;
 
 }J939_CANINFO;
 
@@ -40,10 +59,15 @@ typedef struct _CLEAR_COUNT
 	JZ_U8 EEC1_RPM_Count;
 	JZ_U8 EBC1_Brake_Count;
 	JZ_U8 EEC2_Accelerate_Count;
-	JZ_U8 DisOfTraval_Count;
-	JZ_U8 AllDisOfTraval_Count;
+	JZ_U8 Traval_Count;
+	JZ_U8 Driver_Count;
 	JZ_U8 FuelOil_Count;
-	JZ_U8 AllFuelOil_Count;
+	JZ_U8 Curvature_Count;
+	JZ_U8 SensorDKSwitch_Count;
+	JZ_U8 CompassDirection_Count;
+	JZ_U8 Weight_Count;
+
+
 }CLEAR_COUNT;
 
 static CLEAR_COUNT g_stClearCount;
@@ -96,11 +120,10 @@ static void J1939_Parse_EEC1(CanRxMsg *msg)//发送机转速
 static void J1939_Parse_FuelOil(CanRxMsg *msg)//油耗;
 {
 	JZ_U32 val = msg->Data[4]+(msg->Data[5]<<8)+(msg->Data[6]<<16)+(msg->Data[7]<<24);
-	g_pstJ939_CanInfo->AllFuelOil = val>>2;
+	g_pstJ939_CanInfo->AllFuelOil = val;
 	val =msg->Data[0]+(msg->Data[1]<<8)+(msg->Data[2]<<16)+(msg->Data[3]<<24);
-	g_pstJ939_CanInfo->FuelOil = val>>2;
+	g_pstJ939_CanInfo->FuelOil = val;
 	//Jz_printf("\n J1939_Parse_FuelOil  %d g_J939_AllFuelOil %d \n",g_J939_FuelOil,g_J939_AllFuelOil);
-	g_pstClearCount->AllFuelOil_Count=0;
 	g_pstClearCount->FuelOil_Count=0;
 }
 
@@ -112,11 +135,39 @@ static void J1939_Parse_DisOfTravel(CanRxMsg *msg)//里程;
 	val =msg->Data[0]+(msg->Data[1]<<8)+(msg->Data[2]<<16)+(msg->Data[3]<<24);
 	g_pstJ939_CanInfo->AllDisOfTraval = val;
 	//Jz_printf("\n g_J939_DisOfTraval  %d g_J939_AllDisOfTraval %d \n",g_J939_DisOfTraval,g_J939_AllDisOfTraval);
-	g_pstClearCount->AllDisOfTraval_Count=0;
-	g_pstClearCount->DisOfTraval_Count=0;
+	g_pstClearCount->Traval_Count=0;
 }
-
-
+static void J1939_Parse_DisOfDriver(CanRxMsg *msg)//里程;
+{
+	JZ_U32 val = msg->Data[4]+(msg->Data[5]<<8)+(msg->Data[6]<<16)+(msg->Data[7]<<24);
+	g_pstJ939_CanInfo->AllDisOfDriver= val;
+	val =msg->Data[0]+(msg->Data[1]<<8)+(msg->Data[2]<<16)+(msg->Data[3]<<24);
+	g_pstJ939_CanInfo->DisOfDriver = val;
+	//Jz_printf("\n g_J939_DisOfTraval  %d g_J939_AllDisOfTraval %d \n",g_J939_DisOfTraval,g_J939_AllDisOfTraval);
+	g_pstClearCount->Driver_Count=0;
+}
+static void J1939_Parse_Curvature(CanRxMsg *msg)
+{
+	g_pstJ939_CanInfo->Curvature=msg->Data[4]+(msg->Data[5]<<8);
+	g_pstClearCount->Curvature_Count=0;
+}
+static void J1939_Parse_SensorDirectionKongSwtich(CanRxMsg *msg)
+{
+	g_pstJ939_CanInfo->SensorDKSwitch=msg->Data[0]+(msg->Data[1]<<8);
+	g_pstClearCount->SensorDKSwitch_Count =0;
+}
+static void J1939_Parse_CompassDirection(CanRxMsg *msg)
+{
+	g_pstJ939_CanInfo->CompassDirection=msg->Data[0]+(msg->Data[1]<<8);
+	g_pstClearCount->CompassDirection_Count =0;
+}
+static void J1939_Parse_Weight(CanRxMsg *msg)
+{
+	g_pstJ939_CanInfo->AxleWeight =msg->Data[1]+(msg->Data[2]<<8);
+	g_pstJ939_CanInfo->TrailWeight=msg->Data[3]+(msg->Data[4]<<8);
+	g_pstJ939_CanInfo->StuffWeight=msg->Data[5]+(msg->Data[6]<<8);
+	g_pstClearCount->Weight_Count =0;
+}
 JZ_U8 Jz_J1939_Parse(CanRxMsg *msg)
 {
 	JZ_U8  ret = 0;
@@ -148,6 +199,21 @@ JZ_U8 Jz_J1939_Parse(CanRxMsg *msg)
 		case OIL_PGN:
 			J1939_Parse_FuelOil(msg); //燃油;
 			break;
+		case ACC1_PGN:
+			J1939_Parse_Curvature(msg); //ACC 路面曲率 0xfe6f
+			break;
+		case ETC5_PGN:
+			J1939_Parse_SensorDirectionKongSwtich(msg);
+			break;
+		case CAR_PGN:
+			J1939_Parse_CompassDirection(msg);
+			break;
+		case DRIVER_PGN:
+			J1939_Parse_DisOfDriver(msg);
+			break;
+		case WEIGTH_PGN:
+			J1939_Parse_Weight(msg);
+			break;
 		default:
 			ret =1;
 			break;
@@ -156,7 +222,7 @@ JZ_U8 Jz_J1939_Parse(CanRxMsg *msg)
 }
 
 #define J1939_SYNC  0x55
-#define J1939_HEART 0x1b
+#define J1939_HEART 0x2f
 
 // typedef struct 
 // {
@@ -213,6 +279,17 @@ JZ_U32 Jz_J1939_GetCarInfomation(Jz_J1939_INFO *info)
 	info->AllDisOfTraval = g_pstJ939_CanInfo->AllDisOfTraval;
 	info->FuelOil =g_pstJ939_CanInfo->FuelOil;
 	info->AllFuelOil =g_pstJ939_CanInfo->AllFuelOil;
+
+	info->DisOfDriver = g_pstJ939_CanInfo->DisOfDriver;
+	info->AllDisOfDriver = g_pstJ939_CanInfo->AllDisOfDriver;
+	info->CompassDirection =g_pstJ939_CanInfo->CompassDirection;
+	info->Curvature = g_pstJ939_CanInfo->Curvature;	
+	info->SensorDKSwitch =g_pstJ939_CanInfo->SensorDKSwitch;
+	info->AxleWeight =g_pstJ939_CanInfo->AxleWeight;
+	info->TrailWeight =g_pstJ939_CanInfo->TrailWeight;
+	info->StuffWeight =g_pstJ939_CanInfo->StuffWeight;
+
+
 	info->ErrCode = Jz_GetSystermErrCode();
 	info->SUM = CheckSum((JZ_U8 *)info,J1939_HEART);
 
@@ -253,27 +330,51 @@ void Jz_J1939_Timer(void)
 		g_pstClearCount->EEC2_Accelerate_Count =0;
 		g_pstJ939_CanInfo->EEC2_Accelerate=0xff;
 	}
-	//激活时1s；或状态改变
-	if(++g_pstClearCount->DisOfTraval_Count==30)
+	//请求时
+	if(++g_pstClearCount->Driver_Count==30)
 	{
-		g_pstClearCount->DisOfTraval_Count =0;
-		g_pstJ939_CanInfo->DisOfTraval=0xffffffff;
+		g_pstClearCount->Driver_Count =0;
+		g_pstJ939_CanInfo->AllDisOfDriver=0xffffffff;
+		g_pstJ939_CanInfo->DisOfDriver=0xffffffff;
 	}
-	if(++g_pstClearCount->AllDisOfTraval_Count==30)
+	//激活时1s；或状态改变
+	if(++g_pstClearCount->Traval_Count==30)
 	{
-		g_pstClearCount->AllDisOfTraval_Count =0;
+		g_pstClearCount->Traval_Count =0;
 		g_pstJ939_CanInfo->AllDisOfTraval=0xffffffff;
+		g_pstJ939_CanInfo->DisOfTraval=0xffffffff;
 	}
 	//请求时
 	if(++g_pstClearCount->FuelOil_Count==30)
 	{
 		g_pstClearCount->FuelOil_Count =0;
 		g_pstJ939_CanInfo->FuelOil=0xffffffff;
-	}
-	if(++g_pstClearCount->AllFuelOil_Count==30)
-	{
-		g_pstClearCount->AllFuelOil_Count =0;
 		g_pstJ939_CanInfo->AllFuelOil=0xffffffff;
+	}
+
+	if(++g_pstClearCount->Curvature_Count==10)
+	{
+		g_pstClearCount->Curvature_Count =0;
+		g_pstJ939_CanInfo->Curvature =0xffff;
+	}
+
+	if(++g_pstClearCount->SensorDKSwitch_Count==10)
+	{
+		g_pstClearCount->SensorDKSwitch_Count =0;
+		g_pstJ939_CanInfo->SensorDKSwitch =0xffff;
+	}
+
+	if(++g_pstClearCount->CompassDirection_Count==10)
+	{
+		g_pstClearCount->CompassDirection_Count =0;
+		g_pstJ939_CanInfo->CompassDirection =0xffff;
+	}
+	if(++g_pstClearCount->Weight_Count==10)
+	{
+		g_pstClearCount->Weight_Count =0;
+		g_pstJ939_CanInfo->StuffWeight =0xffff;
+		g_pstJ939_CanInfo->AxleWeight =0xffff;
+		g_pstJ939_CanInfo->TrailWeight =0xffff;
 	}
 }
 

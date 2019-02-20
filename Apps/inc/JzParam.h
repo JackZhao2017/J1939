@@ -5,7 +5,7 @@
 
 #define kMAX_FILTER     13
 // #define kDEFAULT_FILTER 7
-#define kDEFAULT_FILTER 5
+#define kDEFAULT_FILTER 6
 #define kRESETFILTER    4
 
 typedef struct 

@@ -52,8 +52,9 @@ void Jz_UartSend_SendFrame(CanRxMsg *msg)
 		Jz_SetSystermErrCode(UART_SEND_FULL);
 	}
 	if(g_bFinished==JZ_TRUE){
-		JzSemPost(&g_Sem);
 		g_bFinished = JZ_FALSE;
+		Jz_ClearSystermErrCode(UART_SEND_FULL);
+		JzSemPost(&g_Sem);	
 	}
 }
 

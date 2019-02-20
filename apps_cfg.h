@@ -8,9 +8,8 @@
 #define RINGBUF_MUTEX_PRIO 	PRIO_BASE+2
 #define UARTCAN_MUTEX_PRIO 	PRIO_BASE+3
 
-#define CAN_READ_PRIO				  PRIO_BASE+5
- 
-#define CAN_PARSE_PRIO				  PRIO_BASE+4
+#define CAN_READ_PRIO				  PRIO_BASE+4
+#define CAN_PARSE_PRIO				  PRIO_BASE+5
 #define UART_SEND_PRIO       		  PRIO_BASE+6
 #define UART_READ_PRIO       		  PRIO_BASE+7 	//ÉèÖÃÈÎÎñÓÅÏÈ¼¶
 #define UART_PARSE_PRIO               PRIO_BASE+8

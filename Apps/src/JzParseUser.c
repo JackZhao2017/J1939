@@ -3,7 +3,7 @@
 #include "JzParam.h"
 #include "JzCanRead.h"
 #include "JzUartCan.h"
-
+#include "JzErrCode.h"
 
 JZ_S32 Jz_ParseUser_DetectSync(JZ_U8 *buf,JZ_S32 index)
 {
@@ -50,6 +50,7 @@ JZ_S32 Jz_ParseUser_DetectSUM(JZ_U8 *msg, JZ_S32 len)
 	{
 		return 1;
 	}
+	Jz_SetSystermErrCode(UART_PARSE_ERR);
 	err_printf("%s error %d %d  \n",__func__,msg[len] ,CheckSum(msg,len));
 	return 0;
 }

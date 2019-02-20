@@ -8,10 +8,11 @@
 #define UART_CMD_ERR   0x08
 #define SYS_ERR		   0x10
 #define MUTEX_ERR 	   0x20
+#define UART_PARSE_ERR 0x40 
 
-
-
-void  Jz_SetSystermErrCode(JZ_U8 err); 
+void   Jz_SetSystermErrCode(JZ_U8 err); 
+void   Jz_ClearSystermErrCode(JZ_U8 err);
 JZ_U8  Jz_GetSystermErrCode(void); 
+
 #endif
 

@@ -3,7 +3,7 @@
 
 // static void Print_QueueInfo(const char *func,JZ_QUEUE_INFO *info)
 // {
-// 	Jz_printf(" %s get %d put  %d \r\n",func,info->get,info->put);
+// 		Jz_printf(" %s get %d put  %d \r\n",func,info->get,info->put);
 // }
 
 
@@ -36,7 +36,7 @@ int JZ_QueuePut(JZ_QUEUE_INFO *info,CanRxMsg *msg)
 	}
 	memcpy(&info->buf[info->put],msg,sizeof(CanRxMsg));
 	info->put=(info->put+1)%info->size;
-	// Print_QueueInfo(__func__,info);
+	//Print_QueueInfo(__func__,info);
 	JzMutexUnlock(&info->mutex);
 	return 0;
 }
@@ -49,7 +49,7 @@ int JZ_QueueGet(JZ_QUEUE_INFO *info,CanRxMsg *msg)
 	}	
 	memcpy(msg,&info->buf[info->get],sizeof(CanRxMsg));
 	info->get=(info->get+1)%info->size;
-	// Print_QueueInfo(__func__,info);
+	//Print_QueueInfo(__func__,info);
 	JzMutexUnlock(&info->mutex);
 	return 1;
 }

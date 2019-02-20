@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\Apps\inc;..\Peripherals\inc;..\Ucos\CMSIS;..\Ucos\CORE;..\Ucos\FWLIB\inc;..\Ucos\SYSTEM\delay;..\Ucos\SYSTEM\sys;..\Ucos\SYSTEM\usart;..\Ucos\UCOSII\CONFIG;..\Ucos\UCOSII\CORE;..\Ucos\UCOSII\PORT;..\Peripherals</IncludePath>
+              <IncludePath>..\Apps\inc;..\Peripherals\inc;..\Ucos\CMSIS;..\Ucos\CORE;..\Ucos\FWLIB\inc;..\Ucos\SYSTEM\delay;..\Ucos\SYSTEM\sys;..\Ucos\SYSTEM\usart;..\Ucos\UCOSII\CONFIG;..\Ucos\UCOSII\CORE;..\Ucos\UCOSII\PORT;..\Peripherals;..\..\J1939</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

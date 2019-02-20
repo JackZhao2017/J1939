@@ -51,6 +51,7 @@ void Jz_CanParse_SendFrame(CanRxMsg *msg)
 	if(g_bfinished==JZ_TRUE){
 		g_bfinished = JZ_FALSE;
 		JzSemPost(&g_Sem);
+		Jz_ClearSystermErrCode(CAN_PARSE_FULL);
 	}
 }
 JZ_S32 Jz_CanParse_SetCallBack(CanParseCallBack pCallBackFunc)

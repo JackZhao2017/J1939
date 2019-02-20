@@ -39,7 +39,7 @@ static JZ_U8 CheckSum(JZ_U8 *buf,JZ_U8 len)
 }
 
 
-char data0[] = {00, 00, 00, 00, 0x4C, 0x4E, 00, 00};
+char data0[] = {01, 02, 03, 04, 0x5, 0x6, 7, 8};
 char data1[] = {0x0C,0x7D ,0x7D ,0x00 ,0x00 ,0x00 ,0xF0 ,0x7D};
 char data2[] = {0x58,0x34,0x55 ,0x00 ,0x24 ,0xAF ,0x04 ,0x00};
 unsigned char cmd[0x16];
@@ -121,7 +121,7 @@ int main(int argc, char const *argv[])
 		busy=0;
 		sleep(1);
 		busy=1;
-		msg.ExtId= 0x18FEE900;
+		msg.ExtId= 0x18FEE000;
 		msg.FMI  = (++count)&0xff;
 		msg.Data[0] =  msg.FMI;
 		memcpy(msg.Data,data0,8);
@@ -145,7 +145,7 @@ int main(int argc, char const *argv[])
 
 		msg.ExtId= 0x18FEC1EE;
 		msg.FMI  = (++count)&0xff;
-		memcpy(msg.Data,data2,8);
+		memcpy(msg.Data,data0,8);
 		//Jz_printf("\n main  msg.ExtId 0x%x FMI %d \n",msg.ExtId,msg.FMI);
 		Jz_CanRead_SendFrame(&msg);
 		usleep(50);
@@ -159,19 +159,19 @@ int main(int argc, char const *argv[])
 // 	JZ_U16 MARSK[kRESETFILTER];
 // }JZ_CMDMSG;
 
-		cmd[0]=0x55;
-		cmd[1]=0x15;
-		cmd[2] = (++count)&0xff;;
-		cmdmsg.KBPS  = 12;
-		cmdmsg.SUM =1;
-		cmdmsg.ID[0] = 0xf125;
-		cmdmsg.MARSK[0] = 0xffff;
-		memcpy(&cmd[3],&cmdmsg,0x12);
-		cmd[0x15]=CheckSum(cmd,0x15);
-		if(g_SystemUartReadCallBackFunc!=NULL)
-		{
-				g_SystemUartReadCallBackFunc(cmd,0x16);
-		}
+		// cmd[0]=0x55;
+		// cmd[1]=0x15;
+		// cmd[2] = (++count)&0xff;;
+		// cmdmsg.KBPS  = 12;
+		// cmdmsg.SUM =1;
+		// cmdmsg.ID[0] = 0xf125;
+		// cmdmsg.MARSK[0] = 0xffff;
+		// memcpy(&cmd[3],&cmdmsg,0x12);
+		// cmd[0x15]=CheckSum(cmd,0x15);
+		// if(g_SystemUartReadCallBackFunc!=NULL)
+		// {
+		// 		g_SystemUartReadCallBackFunc(cmd,0x16);
+		// }
 		// Jz_printf(" \n");		
 	}
 	return 0;

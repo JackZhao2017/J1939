@@ -75,6 +75,7 @@ void Jz_CanRead_SendFrame(CanRxMsg *msg)
 	if(g_bFinished==JZ_TRUE)
 	{
 		g_bFinished = JZ_FALSE;
+		Jz_ClearSystermErrCode(CAN_READ_FULL);
 		memcpy(&g_CanRxMsg,msg,sizeof(CanRxMsg));
 		JzSemPost(&g_CanReadSem);
 	}else{
